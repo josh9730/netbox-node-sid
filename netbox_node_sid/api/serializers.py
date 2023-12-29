@@ -9,4 +9,4 @@ class NodeSIDSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = NodeSID
-        fields = ("device", "v6_sid", "device", "comments", "tags", "custom_fields", "created", "last_updated")
+        fields = ("id", "url", "device", "v4_sid", "comments", "tags", "custom_fields", "created", "last_updated")

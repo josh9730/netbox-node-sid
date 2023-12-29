@@ -1,0 +1,18 @@
+{% block content %}
+    <div class="card">
+        <h5 class="card-header">Segment Routing Node SIDs</h5>
+        <div class="card-body">
+            <table class="table table-hover panel-body">
+                <tr>
+                    <th scope="row"><span title="IPv4 Node SID">IPv4</span></th>
+                    <td>{{ v4_sid }}</td>
+                </tr>
+                <tr>
+                    <th scope="row"><span title="IPv6 Node SID">IPv6</span></th>
+                    <td>{{ v6_sid }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

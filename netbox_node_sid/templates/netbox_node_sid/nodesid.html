@@ -1,0 +1,32 @@
+{% extends 'generic/object.html' %}
+
+{% block content %}
+    <div class="row mb-3">
+        <div class="col col-md-6">
+            <div class="card">
+                <h5 class="card-header">Node SID</h5>
+                <div class="card-body">
+                    <table class="table table-hover attr-table">
+                        <tr>
+                            <th scope="row">Device</th>
+                            <td>{{ object.device }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">IPv4 Node SID</th>
+                            <td>{{ object.v4_sid }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">IPv6 Node SID</th>
+                            <td>{{ object.v6_sid }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {% include 'inc/panels/custom_fields.html' %}
+        </div>
+        <div class="col col-md-6">
+            {% include 'inc/panels/tags.html' %}
+            {% include 'inc/panels/comments.html' %}
+        </div>
+    </div>
+{% endblock content %}

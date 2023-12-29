@@ -33,7 +33,7 @@ class NodeSID(NetBoxModel):
         verbose_name_plural = "Node SIDs"
 
     def __str__(self):
-        return self.v4_sid
+        return str(self.v4_sid)
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_node_sid:nodesid", args=[self.pk])
@@ -50,7 +50,7 @@ class NodeSID(NetBoxModel):
             lower_limit, upper_limit = 0, 998
 
         sids = {
-            i.v4_sid for i in NodeSID.objects.filter(v4_sid__lte=upper_limit).filter(v4_sid_gte=lower_limit)
+            i.v4_sid for i in NodeSID.objects.filter(v4_sid__lte=upper_limit).filter(v4_sid__gte=lower_limit)
         }  # all active SIDs in range
 
         if not sids:  # initial assignment
@@ -67,7 +67,7 @@ class NodeSID(NetBoxModel):
 
     def set_ipv4_sid(self):
         if not self.v4_sid:
-            self.v4_sid = self.get_next_sid(self.bb_role)
+            self.v4_sid = self.get_next_v4_sid(self.bb_role)
 
     def set_ipv6_sid(self):
         """IPv6 SID is always odd."""
