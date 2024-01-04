@@ -39,36 +39,44 @@ class NodeSID(NetBoxModel):
         return reverse("plugins:netbox_node_sid:nodesid", args=[self.pk])
 
     def clean(self):
-        self.set_ipv4_sid()
-        self.set_ipv6_sid()
+        self._set_ipv4_sid()
+        self._set_ipv6_sid()
         return super().clean()
 
-    @staticmethod
-    def get_next_v4_sid(bb_role: bool = False) -> int:
-        lower_limit, upper_limit = 1000, 3998
-        if bb_role:
-            lower_limit, upper_limit = 0, 998
+    def _get_available_v4_sid(self) -> int:
+        """Find next available IPv4 Node SID.
 
-        sids = {
+        - First get all active SIDs in the appropriate range (0-998 for Backbone, 1000-3998 for CPE)
+            - if none, return 0 or 1000 (initial assignment)
+        - Next, get a set of all possible SID values within the range, using the max of active SIDs as the upper limit
+        - Compute the set difference between the two, giving a set of SIDs that are available between the lower value
+          of the range and the highest configured SID
+        - If the set difference exists, return the lowest available SID
+        - If the difference does not exist, then there are no 'holes' in the current assignment. Return the max
+          configured SID + 2
+        - Note IPv4 SIDs must be even
+        """
+        lower_limit, upper_limit = (0, 998) if self.bb_role else (1000, 3998)
+        all_active_sids_in_range = {
             i.v4_sid for i in NodeSID.objects.filter(v4_sid__lte=upper_limit).filter(v4_sid__gte=lower_limit)
-        }  # all active SIDs in range
+        }
 
-        if not sids:  # initial assignment
+        if not all_active_sids_in_range:
             return lower_limit
 
-        all_sids = {
-            i for i in range(lower_limit, max(sids) + 1, 2)
-        }  # All SIDs between lower_limit and the highest active SID
-        open_sids = sids ^ all_sids  # SIDs available between 0 and highest active SID
+        all_sids_in_range = {i for i in range(lower_limit, max(all_active_sids_in_range) + 1, 2)}
+        available_sids_in_range = all_sids_in_range - all_active_sids_in_range
 
-        if open_sids:
-            return list(open_sids)[0]  # first available open SID
-        return max(sids) + 2  # highest active SID + 2 (even only)
+        if available_sids_in_range:
+            return min(available_sids_in_range)
+        return max(all_active_sids_in_range) + 2
 
-    def set_ipv4_sid(self):
+    def _set_ipv4_sid(self):
+        """Compute the next available SID if not input by user."""
         if not self.v4_sid:
-            self.v4_sid = self.get_next_v4_sid(self.bb_role)
+            self.v4_sid = self._get_available_v4_sid()
 
-    def set_ipv6_sid(self):
+    def _set_ipv6_sid(self):
         """IPv6 SID is always odd."""
-        self.v6_sid = self.v4_sid + 1
+        if not self.v6_sid:
+            self.v6_sid = self.v4_sid + 1
